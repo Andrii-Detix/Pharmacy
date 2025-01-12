@@ -14,7 +14,7 @@ public class User : Entity
         Password = password;
     }
     
-    public string Name { get; }
+    public string Name { get; private set; }
     public string Email { get; }
     public string Password { get; }
 
@@ -25,12 +25,12 @@ public class User : Entity
             throw new Exception($"Invalid {nameof(id)}");
         }
 
-        if (String.IsNullOrWhiteSpace(name) || name.Length > MaxNameLength)
+        if (!CheckNameValidity(name))
         {
             throw new Exception($"Invalid {nameof(name)}");
         }
 
-        if (String.IsNullOrWhiteSpace(password) || password.Length < MaxNameLength)
+        if (!CheckPasswordValidity(password))
         {
             throw new Exception($"Invalid {nameof(password)}");
         }
@@ -43,6 +43,16 @@ public class User : Entity
         return new User(id, name, email, password);
     }
 
+    public void UpdateName(string name)
+    {
+        if (!CheckNameValidity(name))
+        {
+            throw new ArgumentException($"Invalid {nameof(name)}");
+        }
+        
+        Name = name;
+    }
+
     private static bool CheckEmailValidity(string email)
     {
         char emailAttribute = '@';
@@ -50,5 +60,15 @@ public class User : Entity
         int index = email.IndexOf(emailAttribute);
         
         return index != -1 && index != 0 && index < email.Length - 1;
+    }
+
+    private static bool CheckPasswordValidity(string password)
+    {
+        return String.IsNullOrWhiteSpace(password) || password.Length < MinPasswordLength;
+    }
+
+    private static bool CheckNameValidity(string name)
+    {
+        return String.IsNullOrWhiteSpace(name) || name.Length > MaxNameLength;
     }
 }
