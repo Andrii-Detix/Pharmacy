@@ -35,7 +35,7 @@ public class Cart : Entity
             throw new ArgumentException("Item already exists");
         }
         
-        var item = CartItem.Create(Guid.NewGuid(),Id, productId, quantity);
+        var item = CartItem.Create(Guid.NewGuid(), productId, quantity);
         _items.Add(item);
         
         return item;
