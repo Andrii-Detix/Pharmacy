@@ -1,4 +1,5 @@
 ﻿using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.ValueObjects;
 
 namespace Pharmacy.Domain.Entities;
 
@@ -7,7 +8,7 @@ public class User : Entity
     public const int MaxNameLength = 30;
     public const int MinPasswordLength = 8;
     
-    private User(Guid id, string name, string email, string password) : base(id)
+    private User(Guid id, string name, Email email, string password) : base(id)
     {
         Name = name;
         Email = email;
@@ -15,10 +16,10 @@ public class User : Entity
     }
     
     public string Name { get; private set; }
-    public string Email { get; }
+    public Email Email { get; }
     public string Password { get; }
 
-    public static User Create(Guid id, string name, string email, string password)
+    public static User Create(Guid id, string name, Email email, string password)
     {
         if(id == Guid.Empty)
         {
@@ -34,11 +35,6 @@ public class User : Entity
         {
             throw new Exception($"Invalid {nameof(password)}");
         }
-
-        if (!CheckEmailValidity(email))
-        {
-            throw new Exception($"Invalid {nameof(email)}");
-        }
         
         return new User(id, name, email, password);
     }
@@ -51,15 +47,6 @@ public class User : Entity
         }
         
         Name = name;
-    }
-
-    private static bool CheckEmailValidity(string email)
-    {
-        char emailAttribute = '@';
-        
-        int index = email.IndexOf(emailAttribute);
-        
-        return index != -1 && index != 0 && index < email.Length - 1;
     }
 
     private static bool CheckPasswordValidity(string password)
