@@ -6,9 +6,8 @@ namespace Pharmacy.Domain.Entities;
 public class User : Entity
 {
     public const int MaxNameLength = 30;
-    public const int MinPasswordLength = 8;
     
-    private User(Guid id, string name, Email email, string password) : base(id)
+    private User(Guid id, string name, Email email, Password password) : base(id)
     {
         Name = name;
         Email = email;
@@ -17,23 +16,20 @@ public class User : Entity
     
     public string Name { get; private set; }
     public Email Email { get; }
-    public string Password { get; }
+    public Password Password { get; }
 
-    public static User Create(Guid id, string name, Email email, string password)
+    public static User Create(Guid id, string name, Email email, Password password)
     {
         if(id == Guid.Empty)
         {
             throw new Exception($"Invalid {nameof(id)}");
         }
 
+        name = name.Trim();
+        
         if (!CheckNameValidity(name))
         {
             throw new Exception($"Invalid {nameof(name)}");
-        }
-
-        if (!CheckPasswordValidity(password))
-        {
-            throw new Exception($"Invalid {nameof(password)}");
         }
         
         return new User(id, name, email, password);
@@ -47,11 +43,6 @@ public class User : Entity
         }
         
         Name = name;
-    }
-
-    private static bool CheckPasswordValidity(string password)
-    {
-        return String.IsNullOrWhiteSpace(password) || password.Length < MinPasswordLength;
     }
 
     private static bool CheckNameValidity(string name)
