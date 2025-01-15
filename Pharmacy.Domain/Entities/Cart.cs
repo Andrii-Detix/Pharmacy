@@ -4,7 +4,7 @@ namespace Pharmacy.Domain.Entities;
 
 public class Cart : Entity
 {
-    private List<CartItem> _items = new();
+    private readonly List<CartItem> _items = new();
     public Cart(Guid id, Guid userId) : base(id)
     {
         UserId = userId;
@@ -35,7 +35,7 @@ public class Cart : Entity
             throw new ArgumentException("Item already exists");
         }
         
-        var item = CartItem.Create(Guid.NewGuid(), productId, quantity);
+        var item = CartItem.Create(Guid.NewGuid(), Id, productId, quantity);
         _items.Add(item);
         
         return item;

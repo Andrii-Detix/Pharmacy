@@ -1,4 +1,5 @@
 ﻿using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.ValueObjects;
 
 namespace Pharmacy.Domain.Entities;
 
@@ -6,7 +7,7 @@ public class Product : Entity
 {
     public const int MaxNameLength = 50;
     
-    private Product(Guid id, string name, decimal price, int quantity) : base(id)
+    private Product(Guid id, string name, Money price, int quantity) : base(id)
     {
         Name = name;
         Price = price;
@@ -14,7 +15,7 @@ public class Product : Entity
     }
     
     public string Name { get; }
-    public decimal Price { get; }
+    public Money Price { get; }
     public int Quantity { get; }
 
     public static Product Create(Guid id, string name, decimal price, int quantity)
@@ -24,21 +25,20 @@ public class Product : Entity
             throw new ArgumentException("Invalid id");
         }
 
+        name = name.Trim();
+
         if (string.IsNullOrWhiteSpace(name) || name.Length > MaxNameLength)
         {
             throw new ArgumentException("Invalid name");
-        }
-
-        if (price <= 0)
-        {
-            throw new ArgumentException("Invalid price");
         }
 
         if (quantity < 0)
         {
             throw new ArgumentException("Invalid quantity");
         }
+
+        var priceInstance = Money.Create(price);
         
-        return new Product(id, name, price, quantity);
+        return new Product(id, name, priceInstance, quantity);
     }
 }

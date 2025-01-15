@@ -18,7 +18,7 @@ public class User : Entity
     public Email Email { get; }
     public Password Password { get; }
 
-    public static User Create(Guid id, string name, Email email, Password password)
+    public static User Create(Guid id, string name, string email, string password)
     {
         if(id == Guid.Empty)
         {
@@ -32,7 +32,9 @@ public class User : Entity
             throw new Exception($"Invalid {nameof(name)}");
         }
         
-        return new User(id, name, email, password);
+        var emailInstance = Email.Create(email);
+        var passwordInstance = Password.Create(password);
+        return new User(id, name, emailInstance, passwordInstance);
     }
 
     public void UpdateName(string name)
@@ -47,6 +49,6 @@ public class User : Entity
 
     private static bool CheckNameValidity(string name)
     {
-        return String.IsNullOrWhiteSpace(name) || name.Length > MaxNameLength;
+        return !String.IsNullOrWhiteSpace(name) || name.Length <= MaxNameLength;
     }
 }
