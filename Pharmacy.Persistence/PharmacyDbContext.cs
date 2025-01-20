@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Pharmacy.Application.Abstractions;
 using Pharmacy.Domain.Entities;
 using Pharmacy.Persistence.Configurations;
 
 namespace Pharmacy.Persistence;
 
-public class PharmacyDbContext : DbContext
+public class PharmacyDbContext : DbContext, IPharmacyDbContext
 {
     public PharmacyDbContext(DbContextOptions<PharmacyDbContext> options) : base(options)
     {
