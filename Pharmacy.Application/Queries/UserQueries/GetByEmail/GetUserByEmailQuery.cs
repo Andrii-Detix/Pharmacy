@@ -1,6 +1,6 @@
 ﻿using Pharmacy.Application.Abstractions.Queries;
 using Pharmacy.Domain.Entities;
 
-namespace Pharmacy.Application.Queries.GetByEmail;
+namespace Pharmacy.Application.Queries.UserQueries.GetByEmail;
 
 public record GetUserByEmailQuery(string Email) : IQuery<User>;

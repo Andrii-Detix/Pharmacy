@@ -4,7 +4,7 @@ using Pharmacy.Application.Abstractions.Queries;
 using Pharmacy.Domain.Entities;
 using Pharmacy.Domain.ValueObjects;
 
-namespace Pharmacy.Application.Queries.GetByEmail;
+namespace Pharmacy.Application.Queries.UserQueries.GetByEmail;
 
 public class GetUserByEmailHandler(IPharmacyDbContext _context) : IQueryHandler<GetUserByEmailQuery, User>
 {

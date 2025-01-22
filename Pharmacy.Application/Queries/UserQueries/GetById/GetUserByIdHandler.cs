@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Pharmacy.Application.Abstractions;
+﻿using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Queries;
 using Pharmacy.Domain.Entities;
 
-namespace Pharmacy.Application.Queries.GetById;
+namespace Pharmacy.Application.Queries.UserQueries.GetById;
 
 public class GetUserByIdHandler(IPharmacyDbContext _context) : IQueryHandler<GetUserByIdQuery, User>
 {
