@@ -43,12 +43,17 @@ public class User : Entity
         {
             throw new ArgumentException($"Invalid {nameof(name)}");
         }
+
+        if (Name == name)
+        {
+            throw new Exception($"Changed name is same");
+        }
         
         Name = name;
     }
 
     private static bool CheckNameValidity(string name)
     {
-        return !String.IsNullOrWhiteSpace(name) || name.Length <= MaxNameLength;
+        return !String.IsNullOrWhiteSpace(name) && name.Length <= MaxNameLength;
     }
 }
