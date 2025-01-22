@@ -15,4 +15,8 @@
       <ProjectReference Include="..\Pharmacy.Domain\Pharmacy.Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Queries\UserQueries\" />
+    </ItemGroup>
+
 </Project>
