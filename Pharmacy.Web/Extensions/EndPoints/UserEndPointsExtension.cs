@@ -10,15 +10,17 @@ public static class UserEndPointsExtension
 {
     public static void MapUserEndPoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.CreateUser();
-        endpoints.GetUserById();
-        endpoints.GetUserByEmail();
-        endpoints.UpdateUserName();
+        var usersGroup = endpoints.MapGroup("users");
+        
+        usersGroup.CreateUser();
+        usersGroup.GetUserById();
+        usersGroup.GetUserByEmail();
+        usersGroup.UpdateUserName();
     }
 
-    private static void CreateUser(this IEndpointRouteBuilder endpoints)
+    private static void CreateUser(this RouteGroupBuilder endpoints)
     {
-        endpoints.MapPost("/users", async (ISender sender, CreateUserCommand user) =>
+        endpoints.MapPost("/", async (ISender sender, CreateUserCommand user) =>
         {
             try
             {
@@ -35,7 +37,7 @@ public static class UserEndPointsExtension
 
     private static void GetUserById(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/users/{id:guid}", async (ISender sender, Guid id) =>
+        endpoints.MapGet("/{id:guid}", async (ISender sender, Guid id) =>
         {
             try
             {
@@ -54,7 +56,7 @@ public static class UserEndPointsExtension
 
     private static void GetUserByEmail(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/users", async (ISender sender, string email) =>
+        endpoints.MapGet("/", async (ISender sender, string email) =>
         {
             try
             {
@@ -73,7 +75,7 @@ public static class UserEndPointsExtension
 
     private static void UpdateUserName(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPut("/users/{id:guid}", async (ISender sender, Guid id, string name) =>
+        endpoints.MapPut("/{id:guid}", async (ISender sender, Guid id, string name) =>
         {
             try
             {

@@ -18,6 +18,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapUserEndPoints();
+app.MapEndPoints();
 
 app.Run();
