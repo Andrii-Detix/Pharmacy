@@ -13,7 +13,7 @@ public class CartItem : Entity
     
     public Guid CartId { get; }
     public Guid ProductId { get; }
-    public int Quantity { get; }
+    public int Quantity { get; private set; }
 
     public static CartItem Create(Guid id, Guid cartId, Guid productId, int quantity)
     {
@@ -32,11 +32,26 @@ public class CartItem : Entity
             throw new ArgumentException("Invalid product id");
         }
 
-        if (quantity <= 0)
+        if (!IsValidQuantity(quantity))
         {
             throw new ArgumentException("Invalid quantity");
         }
         
         return new CartItem(id, cartId, productId, quantity);
+    }
+
+    private static bool IsValidQuantity(int quantity)
+    {
+        return quantity > 0;
+    }
+
+    public void ChangeQuantity(int quantity)
+    {
+        if (!IsValidQuantity(quantity))
+        {
+            throw new ArgumentException("Invalid quantity");
+        }
+        
+        Quantity = quantity;
     }
 }

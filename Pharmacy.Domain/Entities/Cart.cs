@@ -28,23 +28,58 @@ public class Cart : Entity
         return new Cart(id, userId);
     }
 
-    public CartItem AddItem(Guid productId, int quantity)
+    public CartItem AddItem(Product product, int quantity)
     {
-        if (_items.Any(i => i.ProductId == productId))
+        if (_items.Any(ci => ci.ProductId == product.Id))
         {
             throw new ArgumentException("Item already exists");
         }
+
+        if (!product.IsAvailableQuantity(quantity))
+        {
+            throw new Exception($"Requested quantity is not available");
+        }
         
-        var item = CartItem.Create(Guid.NewGuid(), Id, productId, quantity);
+        var item = CartItem.Create(Guid.NewGuid(), Id, product.Id, quantity);
         _items.Add(item);
         
         return item;
     }
 
-    public void RemoveItem(Guid itemId)
+    public void RemoveItem(Guid id)
     {
-        var item = _items.FirstOrDefault(x => x.Id == itemId);
+        var item = _items.FirstOrDefault(ci => ci.Id == id);
         
         if(item is not null) _items.Remove(item);
+    }
+
+    public void RemoveItemByProductId(Guid productId)
+    {
+        var item = _items.FirstOrDefault(ci => ci.ProductId == productId);
+        
+        if (item is not null) _items.Remove(item);
+    }
+
+    public void ChangeItemQuantity(Product product, int quantity)
+    {
+        if (quantity == 0)
+        {
+            RemoveItemByProductId(product.Id);
+            return;
+        }
+
+        if (!product.IsAvailableQuantity(quantity))
+        {
+            throw new Exception($"Requested quantity is not available");
+        }
+        
+        var item = _items.FirstOrDefault(ci => ci.ProductId == product.Id);
+        
+        item?.ChangeQuantity(quantity);
+    }
+
+    public void Clear()
+    {
+        _items.Clear();
     }
 }

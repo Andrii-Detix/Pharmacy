@@ -41,4 +41,9 @@ public class Product : Entity
         
         return new Product(id, name, priceInstance, quantity);
     }
+
+    public bool IsAvailableQuantity(int requested)
+    {
+        return requested <= Quantity && requested > 0;
+    }
 }
