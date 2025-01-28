@@ -1,6 +1,8 @@
 ﻿using MediatR;
+using Pharmacy.Application.Commands.CartCommands.Create;
 using Pharmacy.Application.Commands.UserCommands.Create;
 using Pharmacy.Application.Commands.UserCommands.UpdateName;
+using Pharmacy.Application.Queries.CartQueries.GetByUserId;
 using Pharmacy.Application.Queries.UserQueries.GetByEmail;
 using Pharmacy.Application.Queries.UserQueries.GetById;
 
@@ -16,16 +18,20 @@ public static class UserEndPointsExtension
         usersGroup.GetUserById();
         usersGroup.GetUserByEmail();
         usersGroup.UpdateUserName();
+        usersGroup.GetUserCart();
     }
 
     private static void CreateUser(this RouteGroupBuilder endpoints)
     {
-        endpoints.MapPost("/", async (ISender sender, CreateUserCommand user) =>
+        endpoints.MapPost("/", async (ISender sender, CreateUserCommand userCommand) =>
         {
             try
             {
-                Guid id = await sender.Send(user);
+                Guid id = await sender.Send(userCommand);
 
+                var cartCommand = new CreateCartCommand(id);
+                await sender.Send(cartCommand);
+                
                 return Results.Ok(id);
             }
             catch (Exception ex)
@@ -88,6 +94,25 @@ public static class UserEndPointsExtension
             catch (Exception ex)
             {
                 return Results.BadRequest(ex.Message);
+            }
+        });
+    }
+
+    private static void GetUserCart(this IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapGet("/{id:guid}/cart", async (ISender sender, Guid id) =>
+        {
+            try
+            {
+                var query = new GetCartByUserIdQuery(id);
+                
+                var cart = await sender.Send(query);
+                
+                return Results.Ok(cart);
+            }
+            catch (Exception e)
+            {
+                return Results.BadRequest(e.Message);
             }
         });
     }

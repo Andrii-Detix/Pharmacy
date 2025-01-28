@@ -6,5 +6,6 @@ public static class EndPointsExtension
     {
         endpoints.MapUserEndPoints();
         endpoints.MapProductEndPoints();
+        endpoints.MapCartEndpoints();
     }
 }
