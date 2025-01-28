@@ -15,6 +15,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .HasName("pk_product");
 
         builder.Property(p => p.Id)
+            .ValueGeneratedNever()
             .HasColumnName("id");
         
         builder.Property(p => p.Name)

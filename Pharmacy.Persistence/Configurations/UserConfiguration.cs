@@ -15,6 +15,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasName("pk_user");
 
         builder.Property(u => u.Id)
+            .ValueGeneratedNever()
             .HasColumnName("id");
         
         builder.Property(u => u.Name)

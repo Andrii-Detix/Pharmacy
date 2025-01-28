@@ -14,10 +14,12 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
             .HasName("cart_id");
         
         builder.Property(c => c.Id)
+            .ValueGeneratedNever()
             .HasColumnName("id");
         
         builder.Property(c => c.UserId)
             .IsRequired()
+            .ValueGeneratedNever()
             .HasColumnName("user_id");
 
         builder.HasOne<User>()

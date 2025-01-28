@@ -14,14 +14,17 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
             .HasName("pk_cart_item");
 
         builder.Property(ci => ci.Id)
+            .ValueGeneratedNever()
             .HasColumnName("id");
         
         builder.Property(ci => ci.CartId)
             .IsRequired()
+            .ValueGeneratedNever()
             .HasColumnName("cart_id");
         
         builder.Property(ci => ci.ProductId)
             .IsRequired()
+            .ValueGeneratedNever()
             .HasColumnName("product_id");
         
         builder.Property(ci => ci.Quantity)
