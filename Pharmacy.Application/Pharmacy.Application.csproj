@@ -16,7 +16,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Commands\CartCommands\" />
       <Folder Include="Queries\UserQueries\" />
     </ItemGroup>
 

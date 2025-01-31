@@ -1,7 +1,6 @@
 using Pharmacy.Application.Extensions;
 using Pharmacy.Persistence;
 using Pharmacy.Web.Extensions;
-using Pharmacy.Web.Extensions.EndPoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +17,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapEndPoints();
+app.MapControllers();
 
 app.Run();
