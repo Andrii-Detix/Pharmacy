@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Pharmacy.Domain.Errors;
+﻿namespace Shared.Errors;
 
 public record Error
 {

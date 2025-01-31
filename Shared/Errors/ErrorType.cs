@@ -1,4 +1,4 @@
-﻿namespace Pharmacy.Domain.Errors;
+﻿namespace Shared.Errors;
 
 public enum ErrorType
 {

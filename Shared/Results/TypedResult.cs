@@ -1,6 +1,6 @@
-﻿using Pharmacy.Domain.Errors;
+﻿using Shared.Errors;
 
-namespace Pharmacy.Domain.Results;
+namespace Shared.Results;
 
 public record Result<T> : Result
 {

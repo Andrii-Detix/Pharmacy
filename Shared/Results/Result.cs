@@ -1,6 +1,6 @@
-﻿using Pharmacy.Domain.Errors;
+﻿using Shared.Errors;
 
-namespace Pharmacy.Domain.Results;
+namespace Shared.Results;
 
 public record Result
 {
@@ -14,9 +14,9 @@ public record Result
         IsSuccess = isSuccess;
         Error = error;
     }
-    public bool IsSuccess { get; init; }
+    public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
-    public Error Error { get; init; }
+    public Error? Error { get; }
 
     public static Result CreateSuccess() => new Result(true, null);
     public static Result CreateFailure(Error error) => new Result(false, error);
