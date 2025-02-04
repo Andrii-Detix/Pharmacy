@@ -4,6 +4,7 @@ namespace Pharmacy.Domain.Entities;
 
 public class CartItem : Entity
 {
+    private CartItem() { }
     private CartItem(Guid id, Guid cartId, Guid productId, int quantity) : base(id)
     {
         CartId = cartId;

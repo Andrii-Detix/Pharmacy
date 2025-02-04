@@ -1,5 +1,7 @@
 ﻿using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.DomainErrors;
 using Pharmacy.Domain.ValueObjects;
+using Shared.Results;
 
 namespace Pharmacy.Domain.Entities;
 
@@ -7,6 +9,7 @@ public class User : Entity
 {
     public const int MaxNameLength = 30;
     
+    private User() { }
     private User(Guid id, string name, Email email, Password password) : base(id)
     {
         Name = name;
@@ -18,38 +21,50 @@ public class User : Entity
     public Email Email { get; }
     public Password Password { get; }
 
-    public static User Create(Guid id, string name, string email, string password)
+    public static Result<User> Create(Guid id, string name, string email, string password)
     {
         if(id == Guid.Empty)
         {
-            throw new Exception($"Invalid {nameof(id)}");
+            return UserErrors.EmptyId;
         }
 
         name = name.Trim();
         
         if (!CheckNameValidity(name))
         {
-            throw new Exception($"Invalid {nameof(name)}");
+            return UserErrors.InvalidName;
         }
         
-        var emailInstance = Email.Create(email);
-        var passwordInstance = Password.Create(password);
-        return new User(id, name, emailInstance, passwordInstance);
+        var emailResult = Email.Create(email);
+        if (emailResult.IsFailure)
+        {
+            return emailResult.Error!;
+        }
+        
+        var passwordResult = Password.Create(password);
+        if (passwordResult.IsFailure)
+        {
+            return passwordResult.Error!;
+        }
+        
+        return new User(id, name, emailResult.Value!, passwordResult.Value!);
     }
 
-    public void UpdateName(string name)
+    public Result UpdateName(string name)
     {
         if (!CheckNameValidity(name))
         {
-            throw new ArgumentException($"Invalid {nameof(name)}");
+            return UserErrors.InvalidName;
         }
 
         if (Name == name)
         {
-            throw new Exception($"Changed name is same");
+            return UserErrors.SameName;
         }
         
         Name = name;
+
+        return Result.CreateSuccess();
     }
 
     private static bool CheckNameValidity(string name)

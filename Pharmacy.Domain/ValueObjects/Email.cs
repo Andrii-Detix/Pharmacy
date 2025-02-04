@@ -1,9 +1,12 @@
 ﻿using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.DomainErrors;
+using Shared.Results;
 
 namespace Pharmacy.Domain.ValueObjects;
 
 public class Email : ValueObject
 {
+    private Email() { }
     private Email(string email)
     {
         Value = email;
@@ -11,11 +14,11 @@ public class Email : ValueObject
     
     public string Value { get; }
 
-    public static Email Create(string email)
+    public static Result<Email> Create(string email)
     {
         if (string.IsNullOrWhiteSpace(email))
         {
-            throw new ArgumentNullException(nameof(email));
+            return EmailErrors.EmptyEmail;
         }
 
         email = email.Trim();
@@ -26,7 +29,7 @@ public class Email : ValueObject
 
         if (!isValidEmail)
         {
-            throw new ArgumentException("Invalid email");
+            return EmailErrors.InvalidEmail;
         }
 
         return new Email(email);

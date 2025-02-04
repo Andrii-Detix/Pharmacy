@@ -5,7 +5,9 @@ namespace Pharmacy.Domain.Entities;
 public class Cart : Entity
 {
     private readonly List<CartItem> _items = new();
-    public Cart(Guid id, Guid userId) : base(id)
+    
+    private Cart() {}
+    private Cart(Guid id, Guid userId) : base(id)
     {
         UserId = userId;
     }

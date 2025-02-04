@@ -1,5 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.DomainErrors;
+using Shared.Results;
 
 namespace Pharmacy.Domain.ValueObjects;
 
@@ -7,39 +9,40 @@ public class Password : ValueObject
 {
     public const int MinLength = 8;
     
+    private Password() { }
     private Password(string value)
     {
         Value = value;
     }
     public string Value { get; }
 
-    public static Password Create(string password)
+    public static Result<Password> Create(string password)
     {
         if (String.IsNullOrWhiteSpace(password))
         {
-            throw new ArgumentNullException(nameof(password));
+            return PasswordErrors.EmptyPassword;
         }
         
         password = password.Trim();
 
         if (password.Length < MinLength)
         {
-            throw new ArgumentException($"{nameof(password)} must have at least {MinLength} characters");
+            return PasswordErrors.InvalidPassword($"Password must have at least {MinLength} characters");
         }
 
         if (!Regex.IsMatch(password, @"[0-9]"))
         {
-            throw new ArgumentException($"{nameof(password)} must consist at least one number");
+            return PasswordErrors.InvalidPassword("Password must consist at least one number");
         }
 
         if (!Regex.IsMatch(password, @"[a-z]"))
         {
-            throw new ArgumentException($"{nameof(password)} must consist at least one small letter");
+            return PasswordErrors.InvalidPassword("Password must consist at least one small letter");
         }
 
         if (!Regex.IsMatch(password, @"[A-Z]"))
         {
-            throw new ArgumentException($"{nameof(password)} must consist at least one capital letter");
+            return PasswordErrors.InvalidPassword($"{nameof(password)} must consist at least one capital letter");
         }
         
         return new Password(password);

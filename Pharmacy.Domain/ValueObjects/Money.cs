@@ -1,25 +1,28 @@
 ﻿using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.DomainErrors;
+using Shared.Results;
 
 namespace Pharmacy.Domain.ValueObjects;
 
 public class Money : ValueObject
 {
+    private Money() { }
     private Money(decimal amount)
     {
         Amount = amount;
     }
     public decimal Amount { get; }
 
-    public static Money Create(decimal amount)
+    public static Result<Money> Create(decimal amount)
     {
         if (amount < 0)
         {
-            throw new ArgumentException($"{nameof(amount)} cannot be negative");
+            return MoneyErrors.NegativeMoneyAmount;
         }
 
         if (!CheckDigitsCorrectness(amount))
         {
-            throw new ArgumentException($"Incorrect {nameof(amount)}");
+            return MoneyErrors.InvalidMoney;
         }
         
         return new Money(amount);
@@ -43,9 +46,9 @@ public class Money : ValueObject
         yield return Amount;
     }
     
-    public static Money operator +(Money a, Money b) => Create(a.Amount + b.Amount);
-    public static Money operator -(Money a, Money b) => Create(a.Amount - b.Amount);
-    public static Money operator *(Money a, int b) => Create(a.Amount * b);
+    // public static Money operator +(Money a, Money b) => Create(a.Amount + b.Amount);
+    // public static Money operator -(Money a, Money b) => Create(a.Amount - b.Amount);
+    // public static Money operator *(Money a, int b) => Create(a.Amount * b);
     
     public static bool operator > (Money a, Money b) => a.Amount > b.Amount;
     public static bool operator < (Money a, Money b) => a.Amount < b.Amount;

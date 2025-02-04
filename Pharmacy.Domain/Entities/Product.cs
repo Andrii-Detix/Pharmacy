@@ -1,5 +1,7 @@
 ﻿using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.DomainErrors;
 using Pharmacy.Domain.ValueObjects;
+using Shared.Results;
 
 namespace Pharmacy.Domain.Entities;
 
@@ -7,6 +9,7 @@ public class Product : Entity
 {
     public const int MaxNameLength = 50;
     
+    private Product() { }
     private Product(Guid id, string name, Money price, int quantity) : base(id)
     {
         Name = name;
@@ -18,28 +21,37 @@ public class Product : Entity
     public Money Price { get; }
     public int Quantity { get; }
 
-    public static Product Create(Guid id, string name, decimal price, int quantity)
+    public static Result<Product> Create(Guid id, string name, decimal price, int quantity)
     {
         if (id == Guid.Empty)
         {
-            throw new ArgumentException("Invalid id");
+            return ProductErrors.EmptyId;
         }
 
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return ProductErrors.EmptyName;
+        }
+        
         name = name.Trim();
 
-        if (string.IsNullOrWhiteSpace(name) || name.Length > MaxNameLength)
+        if (name.Length > MaxNameLength)
         {
-            throw new ArgumentException("Invalid name");
+            return ProductErrors.LongName(MaxNameLength);
         }
 
         if (quantity < 0)
         {
-            throw new ArgumentException("Invalid quantity");
+            return ProductErrors.InvalidQuantity;
         }
 
-        var priceInstance = Money.Create(price);
+        var priceResult = Money.Create(price);
+        if (priceResult.IsFailure)
+        {
+            return priceResult.Error!;
+        }
         
-        return new Product(id, name, priceInstance, quantity);
+        return new Product(id, name, priceResult.Value!, quantity);
     }
 
     public bool IsAvailableQuantity(int requested)
