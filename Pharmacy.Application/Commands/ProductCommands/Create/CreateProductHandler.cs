@@ -1,25 +1,34 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Commands;
+using Pharmacy.Application.ApplicationErrors;
 using Pharmacy.Domain.Entities;
+using Shared.Results;
 
 namespace Pharmacy.Application.Commands.ProductCommands.Create;
 
-public class CreateProductHandler(IPharmacyDbContext _context) : ICommandHandler<CreateProductCommand, Guid>
+public class CreateProductHandler(IPharmacyDbContext context) : ICommandHandler<CreateProductCommand, Result<Guid>>
 {
-    public async Task<Guid> Handle(CreateProductCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
-        bool isExists = await _context.Products.AnyAsync(p => p.Name == command.Name, cancellationToken);
+        bool isExists = await context.Products.AnyAsync(p => p.Name == command.Name, cancellationToken);
 
         if (isExists)
         {
-            throw new Exception($"Product with name: {command.Name} already exists.");
+            return ProductErrors.AlreadyExists;
         }
         
-        var product = Product.Create(Guid.NewGuid(), command.Name, command.Price, command.Quantity);
+        Result<Product> productResult = Product.Create(Guid.NewGuid(), command.Name, command.Price, command.Quantity);
+
+        if (productResult.IsFailure)
+        {
+            return productResult.Error!;
+        }
         
-        await _context.Products.AddAsync(product, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        Product product = productResult.Value!;
+        
+        await context.Products.AddAsync(product, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
         
         return product.Id;
     }

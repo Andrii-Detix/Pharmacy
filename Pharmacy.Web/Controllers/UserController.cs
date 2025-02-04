@@ -7,6 +7,8 @@ using Pharmacy.Application.Queries.CartQueries.GetByUserId;
 using Pharmacy.Application.Queries.UserQueries.GetByEmail;
 using Pharmacy.Application.Queries.UserQueries.GetById;
 using Pharmacy.Domain.Entities;
+using Pharmacy.Web.Extensions.ErrorExtensions;
+using Shared.Results;
 
 namespace Pharmacy.Web.Controllers;
 
@@ -17,70 +19,49 @@ public class UserController(ISender sender) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateUser(CreateUserCommand userCommand)
     {
-        try
-        {
-            Guid id = await sender.Send(userCommand);
+        Result<Guid> result = await sender.Send(userCommand);
 
-            var cartCommand = new CreateCartCommand(id);
-            await sender.Send(cartCommand);
-                
-            return Ok(id);
-        }
-        catch (Exception ex)
+        if (result.IsFailure)
         {
-            return BadRequest(ex.Message);
+            return result.Error.ToProblemDetails();
         }
+
+        Guid userId = result.Value;
+
+        var cartCommand = new CreateCartCommand(userId);
+        await sender.Send(cartCommand);
+
+        return Ok(userId);
     }
-    
+
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<User>> GetUserById(Guid id)
     {
-        try
-        {
-            var query = new GetUserByIdQuery(id);
+        var query = new GetUserByIdQuery(id);
 
-            var user = await sender.Send(query);
+        Result<User> result = await sender.Send(query);
 
-            return Ok(user);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return result.IsSuccess ? Ok(result.Value) : result.Error.ToProblemDetails();
     }
 
     [HttpGet]
     public async Task<ActionResult<User>> GetUserByEmail(string email)
     {
-        try
-        {
-            var query = new GetUserByEmailQuery(email);
+        var query = new GetUserByEmailQuery(email);
 
-            var user = await sender.Send(query);
+        Result<User> result = await sender.Send(query);
 
-            return Ok(user);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return result.IsSuccess ? Ok(result.Value) : result.Error.ToProblemDetails();
     }
 
     [HttpPut("{id:guid}")]
     public async Task<ActionResult> UpdateUserName(Guid id, string name)
     {
-        try
-        {
-            var command = new UpdateUserNameCommand(id, name);
+        var command = new UpdateUserNameCommand(id, name);
 
-            await sender.Send(command);
+        Result result = await sender.Send(command);
 
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return result.IsSuccess ? Ok() : result.Error.ToProblemDetails();
     }
 
     [HttpGet("{id:guid}/cart")]
@@ -89,9 +70,9 @@ public class UserController(ISender sender) : ControllerBase
         try
         {
             var query = new GetCartByUserIdQuery(id);
-                
+
             var cart = await sender.Send(query);
-                
+
             return Ok(cart);
         }
         catch (Exception e)

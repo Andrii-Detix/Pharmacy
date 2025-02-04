@@ -1,24 +1,33 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Queries;
+using Pharmacy.Application.ApplicationErrors;
 using Pharmacy.Domain.Entities;
 using Pharmacy.Domain.ValueObjects;
+using Shared.Results;
 
 namespace Pharmacy.Application.Queries.UserQueries.GetByEmail;
 
-public class GetUserByEmailHandler(IPharmacyDbContext _context) : IQueryHandler<GetUserByEmailQuery, User>
+public class GetUserByEmailHandler(IPharmacyDbContext context) : IQueryHandler<GetUserByEmailQuery, Result<User>>
 {
-    public async Task<User> Handle(GetUserByEmailQuery query, CancellationToken cancellationToken)
+    public async Task<Result<User>> Handle(GetUserByEmailQuery query, CancellationToken cancellationToken)
     {
-        var email = Email.Create(query.Email);
+        Result<Email> emailResult = Email.Create(query.Email);
+
+        if (emailResult.IsFailure)
+        {
+            return emailResult.Error;
+        }
         
-        var user = await _context.Users.AsNoTracking()
+        Email email = emailResult.Value!;
+        
+        var user = await context.Users.AsNoTracking()
             .Where(u => u.Email == email)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (user is null)
         {
-            throw new Exception($"User with email {query.Email} does not exist");
+            return UserErrors.NotFound;
         }
         
         return user;

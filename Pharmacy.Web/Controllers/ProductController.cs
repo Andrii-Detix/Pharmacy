@@ -4,6 +4,8 @@ using Pharmacy.Application.Commands.ProductCommands.Create;
 using Pharmacy.Application.Queries.ProductQueries.GetById;
 using Pharmacy.Application.Queries.ProductQueries.GetByNamePart;
 using Pharmacy.Domain.Entities;
+using Pharmacy.Web.Extensions.ErrorExtensions;
+using Shared.Results;
 
 namespace Pharmacy.Web.Controllers;
 
@@ -14,49 +16,28 @@ public class ProductController(ISender sender) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> AddProduct(CreateProductCommand command)
     {
-        try
-        {
-            Guid id = await sender.Send(command);
+            Result<Guid> result = await sender.Send(command);
 
-            return Ok(id);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+            return result.IsSuccess ? Ok(result.Value) : result.Error.ToProblemDetails();
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Product>> GetProductById(Guid id)
     {
-        try
-        {
             var query = new GetProductByIdQuery(id);
                 
-            var product = await sender.Send(query);
+            Result<Product> result = await sender.Send(query);
                 
-            return Ok(product);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+            return result.IsSuccess ? Ok(result.Value) : result.Error.ToProblemDetails();
     }
 
     [HttpGet]
     public async Task<ActionResult<List<Product>>> GetProductsByNamePart(string namePart)
     {
-        try
-        {
             var query = new GetProductsByNamePartQuery(namePart);
                 
-            var products = await sender.Send(query);
+            Result<List<Product>> result = await sender.Send(query);
                 
-            return Ok(products);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+            return result.IsSuccess ? Ok(result.Value) : result.Error.ToProblemDetails();
     }
 }

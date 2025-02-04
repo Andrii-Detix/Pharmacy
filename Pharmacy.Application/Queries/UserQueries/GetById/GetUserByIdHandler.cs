@@ -1,18 +1,23 @@
-﻿using Pharmacy.Application.Abstractions;
+﻿using Microsoft.EntityFrameworkCore;
+using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Queries;
+using Pharmacy.Application.ApplicationErrors;
 using Pharmacy.Domain.Entities;
+using Shared.Results;
 
 namespace Pharmacy.Application.Queries.UserQueries.GetById;
 
-public class GetUserByIdHandler(IPharmacyDbContext _context) : IQueryHandler<GetUserByIdQuery, User>
+public class GetUserByIdHandler(IPharmacyDbContext context) : IQueryHandler<GetUserByIdQuery, Result<User>>
 {
-    public async Task<User> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+    public async Task<Result<User>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
     {
-        var user = await _context.Users.FindAsync(request.Id);
+        var user = await context.Users.AsNoTracking()
+            .Where(u => u.Id == request.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (user is null)
         {
-            throw new Exception($"User with id {request.Id} not found");
+            return UserErrors.NotFound;
         }
         
         return user;

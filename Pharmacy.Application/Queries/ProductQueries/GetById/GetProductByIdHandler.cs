@@ -1,20 +1,20 @@
-﻿using Pharmacy.Application.Abstractions;
+﻿using Microsoft.EntityFrameworkCore;
+using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Queries;
+using Pharmacy.Application.ApplicationErrors;
 using Pharmacy.Domain.Entities;
+using Shared.Results;
 
 namespace Pharmacy.Application.Queries.ProductQueries.GetById;
 
-public class GetProductByIdHandler(IPharmacyDbContext _context) : IQueryHandler<GetProductByIdQuery, Product>
+public class GetProductByIdHandler(IPharmacyDbContext context) : IQueryHandler<GetProductByIdQuery, Result<Product>>
 {
-    public async Task<Product> Handle(GetProductByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<Product>> Handle(GetProductByIdQuery query, CancellationToken cancellationToken)
     {
-        var product = await _context.Products.FindAsync(query.Id);
+        var product = await context.Products.AsNoTracking()
+            .Where(p => p.Id == query.Id)
+            .FirstOrDefaultAsync(cancellationToken);
 
-        if (product is null)
-        {
-            throw new Exception($"Product with id {query.Id} not found");
-        }
-        
-        return product;
+        return product is null ? ProductErrors.NotFound : product;
     }
 }
