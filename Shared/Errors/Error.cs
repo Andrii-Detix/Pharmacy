@@ -2,6 +2,7 @@
 
 public record Error
 {
+    private const string Separator = "||";
     private Error(string code, string description, ErrorType type)
     {
         Code = code;
@@ -15,7 +16,7 @@ public record Error
 
     public string Serialize()
     {
-        return $"{nameof(Code)}: {Code}\n{nameof(Description)}: {Description}\n{nameof(Type)}: {Type}";
+        return String.Join(Separator, Code, Description, Type);
     }
     
     public static Error Validation(string code, string description) => 
@@ -29,4 +30,7 @@ public record Error
 
     public static Error Failure(string code, string description) =>
         new Error(code, description, ErrorType.Failure);
+
+    public static Error None => 
+        new Error(String.Empty, String.Empty, default);
 }

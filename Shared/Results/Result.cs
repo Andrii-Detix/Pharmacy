@@ -4,9 +4,9 @@ namespace Shared.Results;
 
 public record Result
 {
-    protected Result(bool isSuccess, Error? error)
+    protected Result(bool isSuccess, Error error)
     {
-        if (isSuccess && error is not null || !isSuccess && error is null)
+        if (isSuccess && error != Error.None || !isSuccess && error == Error.None)
         {
             throw new ArgumentException("Invalid error", nameof(error));
         }
@@ -16,9 +16,10 @@ public record Result
     }
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
-    public Error? Error { get; }
+    public Error Error { get; }
 
-    public static Result CreateSuccess() => new Result(true, null);
+    public static Result CreateSuccess() => new Result(true, Error.None);
     public static Result CreateFailure(Error error) => new Result(false, error);
     
+    public static implicit operator Result(Error error) => CreateFailure(error);
 }
