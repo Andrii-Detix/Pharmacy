@@ -22,12 +22,13 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             .IsRequired()
             .HasMaxLength(Product.MaxNameLength)
             .HasColumnName("name");
-        
-        builder.Property(p => p.Price)
-            .HasConversion(pr => pr.Amount,
-                amount => Money.Create(amount))
-            .IsRequired()
-            .HasColumnName("price");
+
+        builder.ComplexProperty(p => p.Price, b =>
+        {
+            b.IsRequired();
+            b.Property(p => p.Amount)
+                .HasColumnName("price");
+        });
         
         builder.Property(p => p.Quantity)
             .IsRequired()

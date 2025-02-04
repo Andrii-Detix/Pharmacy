@@ -22,17 +22,21 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(50)
             .IsRequired()
             .HasColumnName("name");
-        
-        builder.Property(u => u.Email)
-            .HasConversion(u => u.Value,
-                value => Email.Create(value))
-            .IsRequired()
-            .HasColumnName("email");
-        
-        builder.Property(u => u.Password)
-            .HasConversion(u => u.Value,
-                value => Password.Create(value))
-            .IsRequired()
-            .HasColumnName("password");
+
+        builder.ComplexProperty(u => u.Email, b =>
+        {
+            b.IsRequired();
+            b.Property(e => e.Value)
+                .HasMaxLength(100)
+                .HasColumnName("email");
+        });
+
+        builder.ComplexProperty(u => u.Password, b =>
+        {
+            b.IsRequired();
+            b.Property(p => p.Value)
+                .HasMaxLength(100)
+                .HasColumnName("password");
+        });
     }
 }
