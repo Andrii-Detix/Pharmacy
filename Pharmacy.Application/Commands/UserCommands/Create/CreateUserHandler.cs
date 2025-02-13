@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Commands;
 using Pharmacy.Application.ApplicationErrors;
@@ -7,7 +8,7 @@ using Shared.Results;
 
 namespace Pharmacy.Application.Commands.UserCommands.Create;
 
-public class CreateUserHandler(IPharmacyDbContext context) : ICommandHandler<CreateUserCommand, Result<Guid>>
+public class CreateUserHandler(IPharmacyDbContext context, IPublisher publisher) : ICommandHandler<CreateUserCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(CreateUserCommand command, CancellationToken cancellationToken)
     {
@@ -17,7 +18,7 @@ public class CreateUserHandler(IPharmacyDbContext context) : ICommandHandler<Cre
         {
             return userResult.Error!;
         }
-        
+         
         User user = userResult.Value!;
         
         bool isExist = await context.Users.AnyAsync(u => u.Email == user.Email, cancellationToken);
@@ -29,6 +30,8 @@ public class CreateUserHandler(IPharmacyDbContext context) : ICommandHandler<Cre
         
         await context.Users.AddAsync(user, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
+
+        await publisher.Publish(new UserCreatedEvent(user.Id));
         
         return user.Id;
     }

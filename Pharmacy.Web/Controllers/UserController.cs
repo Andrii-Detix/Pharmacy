@@ -21,17 +21,7 @@ public class UserController(ISender sender) : ControllerBase
     {
         Result<Guid> result = await sender.Send(userCommand);
 
-        if (result.IsFailure)
-        {
-            return result.Error.ToProblemDetails();
-        }
-
-        Guid userId = result.Value;
-
-        var cartCommand = new CreateCartCommand(userId);
-        await sender.Send(cartCommand);
-
-        return Ok(userId);
+        return result.IsSuccess ? Ok(result.Value) : result.Error.ToProblemDetails();
     }
 
     [HttpGet("{id:guid}")]
@@ -67,17 +57,10 @@ public class UserController(ISender sender) : ControllerBase
     [HttpGet("{id:guid}/cart")]
     public async Task<ActionResult<Cart>> GetUserCart(Guid id)
     {
-        try
-        {
-            var query = new GetCartByUserIdQuery(id);
+        var query = new GetCartByUserIdQuery(id);
 
-            var cart = await sender.Send(query);
+        Result<Cart> result = await sender.Send(query);
 
-            return Ok(cart);
-        }
-        catch (Exception e)
-        {
-            return BadRequest(e.Message);
-        }
+        return result.IsSuccess ? Ok(result.Value) : result.Error.ToProblemDetails();
     }
 }

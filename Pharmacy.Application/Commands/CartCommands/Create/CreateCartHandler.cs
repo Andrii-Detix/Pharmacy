@@ -1,17 +1,34 @@
-﻿using Pharmacy.Application.Abstractions;
+﻿using Microsoft.EntityFrameworkCore;
+using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Commands;
+using Pharmacy.Application.ApplicationErrors;
 using Pharmacy.Domain.Entities;
+using Shared.Results;
 
 namespace Pharmacy.Application.Commands.CartCommands.Create;
 
-public class CreateCartHandler(IPharmacyDbContext _context) : ICommandHandler<CreateCartCommand, Guid>
+public class CreateCartHandler(IPharmacyDbContext context) : ICommandHandler<CreateCartCommand, Result<Guid>>
 {
-    public async Task<Guid> Handle(CreateCartCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Guid>> Handle(CreateCartCommand command, CancellationToken cancellationToken)
     {
-        var cart = Cart.Create(Guid.NewGuid(), command.UserId);
+        bool isExist = await context.Carts.AnyAsync(c => c.UserId == command.UserId, cancellationToken);
+
+        if (isExist)
+        {
+            return CartErrors.AlreadyExists;
+        }
         
-        await _context.Carts.AddAsync(cart, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        Result<Cart> cartResult = Cart.Create(Guid.NewGuid(), command.UserId);
+        
+        if (cartResult.IsFailure)
+        {
+            return cartResult.Error;
+        }
+        
+        Cart cart = cartResult.Value!;
+        
+        await context.Carts.AddAsync(cart, cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return cart.Id;
     }

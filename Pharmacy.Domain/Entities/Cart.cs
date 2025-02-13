@@ -1,10 +1,12 @@
 ﻿using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.DomainErrors;
+using Shared.Results;
 
 namespace Pharmacy.Domain.Entities;
 
 public class Cart : Entity
 {
-    private readonly List<CartItem> _items = new();
+    private readonly List<CartItem> _items = [];
     
     private Cart() {}
     private Cart(Guid id, Guid userId) : base(id)
@@ -15,37 +17,41 @@ public class Cart : Entity
     public Guid UserId { get; }
     public IReadOnlyCollection<CartItem> Items => _items;
 
-    public static Cart Create(Guid id, Guid userId)
+    public static Result<Cart> Create(Guid id, Guid userId)
     {
         if (id == Guid.Empty)
         {
-            throw new ArgumentException("Invalid id");
+            return CartErrors.EmptyId;
         }
 
         if (userId == Guid.Empty)
         {
-            throw new ArgumentException("Invalid user id");
+            return CartErrors.EmptyUserId;
         }
         
         return new Cart(id, userId);
     }
 
-    public CartItem AddItem(Product product, int quantity)
+    public Result<CartItem> AddItem(Product product, int quantity)
     {
         if (_items.Any(ci => ci.ProductId == product.Id))
         {
-            throw new ArgumentException("Item already exists");
+            return CartErrors.ItemAlreadyExists;
         }
 
         if (!product.IsAvailableQuantity(quantity))
         {
-            throw new Exception($"Requested quantity is not available");
+            return CartErrors.InvalidProductQuantity;
         }
         
-        var item = CartItem.Create(Guid.NewGuid(), Id, product.Id, quantity);
-        _items.Add(item);
+        Result<CartItem> itemResult = CartItem.Create(Guid.NewGuid(), Id, product.Id, quantity);
+
+        if (itemResult.IsSuccess)
+        {
+            _items.Add(itemResult.Value!);
+        }
         
-        return item;
+        return itemResult;
     }
 
     public void RemoveItem(Guid id)
@@ -55,29 +61,23 @@ public class Cart : Entity
         if(item is not null) _items.Remove(item);
     }
 
-    public void RemoveItemByProductId(Guid productId)
+    public Result ChangeItemQuantity(Product product, int quantity)
     {
-        var item = _items.FirstOrDefault(ci => ci.ProductId == productId);
-        
-        if (item is not null) _items.Remove(item);
-    }
-
-    public void ChangeItemQuantity(Product product, int quantity)
-    {
-        if (quantity == 0)
-        {
-            RemoveItemByProductId(product.Id);
-            return;
-        }
-
         if (!product.IsAvailableQuantity(quantity))
         {
-            throw new Exception($"Requested quantity is not available");
+            return CartErrors.InvalidProductQuantity;
         }
         
         var item = _items.FirstOrDefault(ci => ci.ProductId == product.Id);
+
+        if (item is null)
+        {
+            return CartErrors.ItemNotFound;
+        }
         
-        item?.ChangeQuantity(quantity);
+        Result result = item.ChangeQuantity(quantity);
+        
+        return result;
     }
 
     public void Clear()

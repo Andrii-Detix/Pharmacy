@@ -1,35 +1,42 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Commands;
+using Pharmacy.Application.ApplicationErrors;
 using Pharmacy.Domain.Entities;
+using Shared.Results;
 
 namespace Pharmacy.Application.Commands.CartCommands.AddCartItem;
 
-public class AddCartItemHandler(IPharmacyDbContext _context) : ICommandHandler<AddCartItemCommand, Cart>
+public class AddCartItemHandler(IPharmacyDbContext context) : ICommandHandler<AddCartItemCommand, Result<Cart>>
 {
-    public async Task<Cart> Handle(AddCartItemCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Cart>> Handle(AddCartItemCommand command, CancellationToken cancellationToken)
     {
-        var product = await _context.Products.AsNoTracking()
+        var product = await context.Products.AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == command.ProductId, cancellationToken);
 
         if (product is null)
         {
-            throw new Exception($"Product with id {command.ProductId} not found");
+            return ProductErrors.NotFound;
         }
 
-        var cart = await _context.Carts
+        var cart = await context.Carts
             .Include(c => c.Items)
             .Where(c => c.Id == command.CartId)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (cart is null)
         {
-            throw new Exception($"Cart with id {command.CartId} not found");
+            return CartErrors.NotFound;
         }
         
-        cart.AddItem(product, command.Quantity);
+        Result result = cart.AddItem(product, command.Quantity);
+
+        if (result.IsFailure)
+        {
+            return result.Error;
+        }
         
-        await _context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken);
 
         return cart;
     }

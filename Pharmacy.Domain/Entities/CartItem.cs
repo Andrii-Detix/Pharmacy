@@ -1,4 +1,6 @@
 ﻿using Pharmacy.Domain.Abstractions.Models;
+using Pharmacy.Domain.DomainErrors;
+using Shared.Results;
 
 namespace Pharmacy.Domain.Entities;
 
@@ -16,26 +18,26 @@ public class CartItem : Entity
     public Guid ProductId { get; }
     public int Quantity { get; private set; }
 
-    public static CartItem Create(Guid id, Guid cartId, Guid productId, int quantity)
+    public static Result<CartItem> Create(Guid id, Guid cartId, Guid productId, int quantity)
     {
         if (id == Guid.Empty)
         {
-            throw new ArgumentException("Invalid id");
+            return CartItemErrors.EmptyId;
         }
 
         if (cartId == Guid.Empty)
         {
-            throw new ArgumentException("Invalid cart id");
+            return CartItemErrors.EmptyCartId;
         }
 
         if (productId == Guid.Empty)
         {
-            throw new ArgumentException("Invalid product id");
+            return CartItemErrors.EmptyProductId;
         }
 
         if (!IsValidQuantity(quantity))
         {
-            throw new ArgumentException("Invalid quantity");
+            return CartItemErrors.InvalidQuantity;
         }
         
         return new CartItem(id, cartId, productId, quantity);
@@ -46,13 +48,15 @@ public class CartItem : Entity
         return quantity > 0;
     }
 
-    public void ChangeQuantity(int quantity)
+    public Result ChangeQuantity(int quantity)
     {
         if (!IsValidQuantity(quantity))
         {
-            throw new ArgumentException("Invalid quantity");
+            return CartItemErrors.InvalidQuantity;
         }
         
         Quantity = quantity;
+
+        return Result.CreateSuccess();
     }
 }

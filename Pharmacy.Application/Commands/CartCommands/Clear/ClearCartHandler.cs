@@ -1,12 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Abstractions.Commands;
+using Pharmacy.Application.ApplicationErrors;
+using Shared.Results;
 
 namespace Pharmacy.Application.Commands.CartCommands.Clear;
 
-public class ClearCartHandler(IPharmacyDbContext _context) : ICommandHandler<ClearCartCommand>
+public class ClearCartHandler(IPharmacyDbContext _context) : ICommandHandler<ClearCartCommand, Result>
 {
-    public async Task Handle(ClearCartCommand command, CancellationToken cancellationToken)
+    public async Task<Result> Handle(ClearCartCommand command, CancellationToken cancellationToken)
     {
         var cart = await _context.Carts
             .Include(c => c.Items)
@@ -15,11 +17,13 @@ public class ClearCartHandler(IPharmacyDbContext _context) : ICommandHandler<Cle
 
         if (cart is null)
         {
-            throw new Exception($"Cart with id {command.Id} not found");
+            return CartErrors.NotFound;
         }
         
         cart.Clear();
         
         await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.CreateSuccess();
     }
 }
